@@ -143,16 +143,6 @@ func rebuildOneEcVolume(commandEnv *CommandEnv, rebuilder *EcNode, collection st
 	if err != nil {
 		return err
 	}
-	defer func() {
-		// clean up working files
-
-		// ask the rebuilder to delete the copied shards
-		err = sourceServerDeleteEcShards(commandEnv.option.GrpcDialOption, collection, volumeId, pb.NewServerAddressFromDataNode(rebuilder.info), copiedShardIds)
-		if err != nil {
-			fmt.Fprintf(writer, "%s delete copied ec shards %s %d.%v\n", rebuilder.info.Id, collection, volumeId, copiedShardIds)
-		}
-
-	}()
 
 	if !applyChanges {
 		return nil
@@ -163,6 +153,17 @@ func rebuildOneEcVolume(commandEnv *CommandEnv, rebuilder *EcNode, collection st
 	if err != nil {
 		return err
 	}
+
+	defer func() {
+		// clean up working files
+
+		// ask the rebuilder to delete the copied shards
+		err = sourceServerDeleteEcShards(commandEnv.option.GrpcDialOption, collection, volumeId, pb.NewServerAddressFromDataNode(rebuilder.info), copiedShardIds)
+		if err != nil {
+			fmt.Fprintf(writer, "%s delete copied ec shards %s %d.%v\n", rebuilder.info.Id, collection, volumeId, copiedShardIds)
+		}
+
+	}()
 
 	// mount the generated shards
 	err = mountEcShards(commandEnv.option.GrpcDialOption, collection, volumeId, pb.NewServerAddressFromDataNode(rebuilder.info), generatedShardIds)
